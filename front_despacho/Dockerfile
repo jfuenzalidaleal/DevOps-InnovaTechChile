@@ -1,4 +1,4 @@
-# Stage 1: Build - Usamos Node para compilar la aplicación React
+# Etapa 1: Construcción
 FROM node:18-alpine AS build
 WORKDIR /app
 COPY package*.json ./
@@ -6,12 +6,12 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-  # Stage 2: Production - Servimos los archivos estáticos usando Nginx
+# Etapa 2: Servidor Nginx para producción
 FROM nginx:alpine
-  # Copiamos la carpeta de salida de Vite (dist) al directorio público de Nginx
+# Copiamos los archivos compilados de React
 COPY --from=build /app/dist /usr/share/nginx/html
 
-  # Copiamos una configuración personalizada para resolver las rutas de React Router
+# ¡ESTA LÍNEA ES CRUCIAL! Asegura que pise el archivo de Nginx por defecto
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
