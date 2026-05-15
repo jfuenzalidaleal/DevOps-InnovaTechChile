@@ -1,0 +1,72 @@
+name: Deploy Innovatech - Multi-Instance
+
+on:
+  push:
+    branches: [ "deploy" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build & Push All Images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest ./back-Despachos_SpringBoot
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest ./back-Ventas_SpringBoot
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest ./front_despacho
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configurar AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # DESPLIEGUE EN BACKEND (Instancia Privada)
+      - name: Deploy Backend & DB
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_BACKEND_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'cd /home/ec2-user',
+              'echo \"${{ secrets.DOCKERHUB_PASSWORD }}\" | docker login -u \"${{ secrets.DOCKERHUB_USERNAME }}\" --password-stdin',
+              'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
+              'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest',
+              'docker stop back-despachos back-ventas db-innovatech || true',
+              'docker rm back-despachos back-ventas db-innovatech || true',
+              'docker run -d --name db-innovatech -v db_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root_password mysql:8.0',
+              'docker run -d --name back-despachos -p 8081:8081 --link db-innovatech:db ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
+              'docker run -d --name back-ventas -p 8082:8081 --link db-innovatech:db ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest'
+            ]"
+
+      # DESPLIEGUE EN FRONTEND (Instancia Pública)
+      - name: Deploy Frontend
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_FRONTEND_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'cd /home/ec2-user',
+              'echo \"${{ secrets.DOCKERHUB_PASSWORD }}\" | docker login -u \"${{ secrets.DOCKERHUB_USERNAME }}\" --password-stdin',
+              'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest',
+              'docker stop frontend-despacho || true',
+              'docker rm frontend-despacho || true',
+              'docker run -d --name frontend-despacho -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest'
+            ]"
