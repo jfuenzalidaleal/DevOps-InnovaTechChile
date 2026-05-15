@@ -18,13 +18,14 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build & Push All Images
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest ./back-Despachos_SpringBoot
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest ./back-Ventas_SpringBoot
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest ./front_despacho
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest
+          run: |
+            # Usamos el punto (.) al final para que el contexto sea la raíz completa del repositorio
+            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest -f ./back-Despachos_SpringBoot/Dockerfile .
+            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest -f ./back-Ventas_SpringBoot/Dockerfile .
+            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest -f ./front_despacho/Dockerfile .
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest
 
   deploy:
     needs: build-and-push
