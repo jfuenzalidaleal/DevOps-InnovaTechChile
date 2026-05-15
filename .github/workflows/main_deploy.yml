@@ -1,4 +1,4 @@
-name: Deploy Innovatech - Multi-Instance
+name: Deploy InnovatechChile
 
 on:
   push:
