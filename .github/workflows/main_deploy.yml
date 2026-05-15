@@ -1,4 +1,4 @@
-name: Deploy InnovatechChile
+name: Deploy InnovatechChilev2
 
 on:
   push:
