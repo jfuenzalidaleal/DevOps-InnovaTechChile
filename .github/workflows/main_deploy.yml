@@ -60,8 +60,8 @@ jobs:
               'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest',
               'docker stop back-despachos back-ventas || true',
               'docker rm back-despachos back-ventas || true',
-              'docker run -d --name back-despachos -p 8081:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
-              'docker run -d --name back-ventas -p 8082:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest'
+              'docker run -d --name back-despachos -p 8081:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} -e DB_PORT=3306 -e DB_NAME=db_innovatech -e DB_USER=root -e DB_PASSWORD=root_password --restart always ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
+              'docker run -d --name back-ventas -p 8082:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} -e DB_PORT=3306 -e DB_NAME=db_innovatech -e DB_USER=root -e DB_PASSWORD=root_password --restart always ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest'
             ]"
 
       - name: Deploy Frontend
