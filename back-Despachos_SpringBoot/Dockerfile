@@ -2,11 +2,11 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
-# Copiamos el archivo de configuración de dependencias
-COPY pom.xml .
+# Copiamos el archivo pom.xml que está dentro de la subcarpeta
+COPY back-Despachos_SpringBoot/pom.xml .
 
-# Copiamos el código fuente del proyecto
-COPY src ./src
+# Copiamos el código fuente que está dentro de la subcarpeta
+COPY back-Despachos_SpringBoot/src ./src
 
 # Compilamos el proyecto saltándonos los tests para acelerar el pipeline
 RUN mvn clean package -DskipTests
