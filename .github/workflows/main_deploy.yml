@@ -46,7 +46,7 @@ jobs:
             --parameters "commands=[
               'docker stop db-innovatech || true',
               'docker rm db-innovatech || true',
-              'docker run -d --name db-innovatech -p 3306:3306 -v db_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root_password WE mysql:8.0'
+              'docker run -d --name db-innovatech -p 3306:3306 -v db_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root_password mysql:8.0'
             ]"
 
       - name: Deploy Backends
