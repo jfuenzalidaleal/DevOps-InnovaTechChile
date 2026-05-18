@@ -26,10 +26,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_ENDPOINT=db
+      - DB_ENDPOINT=10.0.170.43
       - DB_PORT=3306
       - DB_NAME=innovatech_db
-      - DB_USER=root
+      - DB_USERNAME=root
       - DB_PASSWORD=root_password
 
   # --- BACKEND VENTAS ---
@@ -42,10 +42,10 @@ services:
     ports:
       - "8082:8081" # Mapea 8082 externo al 8081 interno de Spring
     environment:
-      - DB_ENDPOINT=db
+      - DB_ENDPOINT=10.0.170.43
       - DB_PORT=3306
       - DB_NAME=innovatech_db
-      - DB_USER=root
+      - DB_USERNAME=root
       - DB_PASSWORD=root_password
 
   # --- FRONTEND ---
