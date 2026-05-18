@@ -1,4 +1,4 @@
-name: Deploy InnovatechChile
+name: Deploy Innovatech
 
 on:
   push:
@@ -38,32 +38,38 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # DESPLIEGUE EN BACKEND (Instancia Privada)
-      - name: Deploy Backend & DB
+      - name: Deploy Database
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_DB_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'docker stop db-innovatech || true',
+              'docker rm db-innovatech || true',
+              'docker run -d --name db-innovatech -p 3306:3306 -v db_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root_password mysql:8.0'
+            ]"
+
+      - name: Deploy Backends
         run: |
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_BACKEND_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'cd /home/ec2-user',
               'echo \"${{ secrets.DOCKERHUB_PASSWORD }}\" | docker login -u \"${{ secrets.DOCKERHUB_USERNAME }}\" --password-stdin',
               'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
               'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest',
-              'docker stop back-despachos back-ventas db-innovatech || true',
-              'docker rm back-despachos back-ventas db-innovatech || true',
-              'docker run -d --name db-innovatech -v db_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root_password mysql:8.0',
-              'docker run -d --name back-despachos -p 8081:8081 --link db-innovatech:db ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
-              'docker run -d --name back-ventas -p 8082:8081 --link db-innovatech:db ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest'
+              'docker stop back-despachos back-ventas || true',
+              'docker rm back-despachos back-ventas || true',
+              'docker run -d --name back-despachos -p 8081:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} -e DB_PORT=3306 -e DB_NAME=db_innovatech -e DB_USER=root -e DB_PASSWORD=root_password --restart always ${{ secrets.DOCKERHUB_USERNAME }}/back-despachos:latest',
+              'docker run -d --name back-ventas -p 8082:8081 -e DB_ENDPOINT=${{ secrets.IP_PRIVADA_DB }} -e DB_PORT=3306 -e DB_NAME=db_innovatech -e DB_USER=root -e DB_PASSWORD=root_password --restart always ${{ secrets.DOCKERHUB_USERNAME }}/back-ventas:latest'
             ]"
 
-      # DESPLIEGUE EN FRONTEND (Instancia Pública)
       - name: Deploy Frontend
         run: |
           aws ssm send-command \
             --instance-ids ${{ secrets.EC2_FRONTEND_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'cd /home/ec2-user',
               'echo \"${{ secrets.DOCKERHUB_PASSWORD }}\" | docker login -u \"${{ secrets.DOCKERHUB_USERNAME }}\" --password-stdin',
               'docker pull ${{ secrets.DOCKERHUB_USERNAME }}/front-despacho:latest',
               'docker stop frontend-despacho || true',

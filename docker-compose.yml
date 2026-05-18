@@ -8,7 +8,7 @@ services:
     container_name: db-innovatech
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Ryzenfake27@
+      MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: innovatech_db
     ports:
       - "3306:3306"
@@ -26,11 +26,11 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_ENDPOINT=db
+      - DB_ENDPOINT=10.0.170.43
       - DB_PORT=3306
       - DB_NAME=innovatech_db
       - DB_USERNAME=root
-      - DB_PASSWORD=Ryzenfake27@
+      - DB_PASSWORD=root_password
 
   # --- BACKEND VENTAS ---
   back-ventas:
@@ -42,11 +42,11 @@ services:
     ports:
       - "8082:8081" # Mapea 8082 externo al 8081 interno de Spring
     environment:
-      - DB_ENDPOINT=db
+      - DB_ENDPOINT=10.0.170.43
       - DB_PORT=3306
       - DB_NAME=innovatech_db
       - DB_USERNAME=root
-      - DB_PASSWORD=Ryzenfake27@
+      - DB_PASSWORD=root_password
 
   # --- FRONTEND ---
   # Requerimiento IE4: Acceso vía puerto 80
@@ -56,8 +56,3 @@ services:
     restart: always
     ports:
       - "80:80"
-
-# Definición del volumen para persistencia (IE2)
-volumes:
-  db_data:
-	driver: local
