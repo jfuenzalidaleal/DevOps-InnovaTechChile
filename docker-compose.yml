@@ -29,7 +29,7 @@ services:
       - DB_ENDPOINT=db
       - DB_PORT=3306
       - DB_NAME=innovatech_db
-      - DB_USERNAME=root
+      - DB_USER=root
       - DB_PASSWORD=root_password
 
   # --- BACKEND VENTAS ---
@@ -45,7 +45,7 @@ services:
       - DB_ENDPOINT=db
       - DB_PORT=3306
       - DB_NAME=innovatech_db
-      - DB_USERNAME=root
+      - DB_USER=root
       - DB_PASSWORD=root_password
 
   # --- FRONTEND ---
