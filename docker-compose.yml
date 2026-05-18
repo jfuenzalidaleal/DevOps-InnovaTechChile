@@ -56,8 +56,3 @@ services:
     restart: always
     ports:
       - "80:80"
-
-# Definición del volumen para persistencia (IE2)
-volumes:
-  db_data:
-	driver: local
